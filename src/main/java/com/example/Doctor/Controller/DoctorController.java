@@ -20,10 +20,12 @@ public class DoctorController {
     @Autowired
     DoctorService doctorService;
 
+    //URL -  http://localhost:8080/Doctor-app/Doctor
     @PostMapping("/Doctor")
     public ResponseEntity<String> saveDoctor(@RequestBody String requestDoctor){
         JSONObject json = new JSONObject(requestDoctor);
         List<String> validationList = validateDoctor(json);
+
         if(validationList.isEmpty()){
             Doctor doctor = setDoctor(json);
             doctorService.saveDoctor(doctor);
@@ -56,19 +58,19 @@ public class DoctorController {
             errorList.add("doctorName");
         }
 
-        if(json.has("specialisation")){
+        if(!json.has("specialisation")){
             errorList.add("specialisation");
         }
 
         return errorList;
     }
 
-    private Doctor setDoctor (JSONObject json){
+    public Doctor setDoctor (JSONObject json){
 
         Doctor doctor = new Doctor();
 
         String doctorId = json.getString("doctorId");
-        doctor.setDoctorId(Integer.valueOf("doctorId"));
+        doctor.setDoctorId(Integer.valueOf(doctorId));
 
         String doctorName = json.getString("doctorName");
         doctor.setDoctorName(doctorName);
