@@ -3,7 +3,13 @@ package com.example.Doctor.Controller;
 import com.example.Doctor.Dao.IDoctorRepository;
 import com.example.Doctor.Model.Doctor;
 import com.example.Doctor.Model.Patient;
+import com.example.Doctor.Service.AppointmentService;
+import com.example.Doctor.Service.IAuthService;
 import com.example.Doctor.Service.PatientService;
+import com.example.Doctor.dto.SignInInput;
+import com.example.Doctor.dto.SignInOutput;
+import com.example.Doctor.dto.SignUpInput;
+import com.example.Doctor.dto.SignUpOutput;
 import jakarta.annotation.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,8 +30,14 @@ public class PatientController {
     @Autowired
     PatientService patientService;
 
+    @Autowired
+    IAuthService authService;
+
+    @Autowired
+    AppointmentService appointmentService;
+
     //URL - http://localhost:8080/Patient
-    @PostMapping("/Patient")
+    /* @PostMapping("/Patient")
     public String savePatient(@RequestBody String patientRequest){
         JSONObject json = new JSONObject(patientRequest);
         Patient patient = setPatient(json);
@@ -51,7 +63,7 @@ public class PatientController {
         Doctor doctor = doctorRepository.findById(Integer.valueOf(doctorId)).get();
         patient.setDoctor(doctor);
         return patient;
-    }
+    } */
 
     /* When we have to pass PatientId : then the response is only total detail of that patient
        When we have to pass DoctorId : then the response is all the patients of that doctor
@@ -62,4 +74,72 @@ public class PatientController {
         JSONArray patientDetails = patientService.getPatient();
         return new ResponseEntity<>(patientDetails.toString(),HttpStatus.OK);
     }
+
+    //sign up
+
+    // sign up input
+    //sign up output
+    @PostMapping("/signup")
+    public SignUpOutput signup(@RequestBody SignUpInput signUpDto)
+    {
+        return patientService.signUp(signUpDto);
+    }
+
+    //sign in
+
+    @PostMapping("/signin")
+    public SignInOutput signIn(@RequestBody SignInInput signInDto)
+    {
+        return patientService.signIn(signInDto);
+    }
+
+    @GetMapping("/doctors")
+    public ResponseEntity<List<Doctor>> getAllDoctors(@RequestParam String userEmail, @RequestParam String token)
+    {
+        HttpStatus status;
+        List<Doctor> allDoctors = null;
+        //authenticate
+
+        //token : calculate token -> find email in Db corr to this token-> match the emails
+        if(authService.authenticate(userEmail,token))
+        {
+
+            allDoctors =  patientService.getAllDoctors();
+            status = HttpStatus.OK;
+        }
+        else
+        {
+            status = HttpStatus.FORBIDDEN;
+        }
+
+
+
+        return new ResponseEntity<List<Doctor>>(allDoctors, status);
+    }
+
+
+    //todo : move the create appointment in Appointment controller in here along with authentication...!
+
+    //delete my appointment :
+
+    @DeleteMapping("appointment")
+    ResponseEntity<Void> cancelAppointment(@RequestParam String userEmail, @RequestParam String token, @RequestBody AppointmentKey key)
+    {
+
+        HttpStatus status;
+        if(authService.authenticate(userEmail,token))
+        {
+            patientService.cancelAppointment(key);
+            status = HttpStatus.OK;
+        }
+        else
+        {
+            status = HttpStatus.FORBIDDEN;
+        }
+
+        return new ResponseEntity<Void>(status);
+
+    }
+
+
 }

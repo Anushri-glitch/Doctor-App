@@ -1,4 +1,6 @@
 package com.example.Doctor.Controller;
+import com.example.Doctor.Model.Appointment;
+import com.example.Doctor.Service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
